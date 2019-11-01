@@ -24,10 +24,11 @@ public class Player : MonoBehaviour
     public Rigidbody2D rigi;
     public SpriteRenderer render;
     public Enemy enemy;
+    public float distdash;
     public GameObject package;
     public bool iframe;
     public Animator anim;
-    
+    public Enemy closestenem;
 
     private void Start()
     {
@@ -36,10 +37,11 @@ public class Player : MonoBehaviour
         playercollider = GetComponent<Collider2D>();
         render = this.transform.Find("Graphics").GetComponent<SpriteRenderer>();
         enemy = GameObject.FindGameObjectWithTag("Enemy").GetComponent<Enemy>();
+        
         iframe = false;
         anim = this.GetComponent<Animator>();
 
-        
+
 
     }
     private void Update()
@@ -48,30 +50,61 @@ public class Player : MonoBehaviour
         {
             DamagePlayer(2);
         }
-        if (Package.retrieved==false)
+        if (Package.retrieved == false)
             UnityStandardAssets._2D.PlatformerCharacter2D.m_MaxSpeed = 15f;
-        
-        else 
+
+        else
             UnityStandardAssets._2D.PlatformerCharacter2D.m_MaxSpeed = 10f;
 
-  
-        GameObject search = GameObject.FindGameObjectWithTag("Enemy");
-        if (search != null)
+
+        
+        /*
+        if (enemies.Length != 0)
         {
-            dist2 = Vector3.Distance(transform.position, GameObject.FindGameObjectWithTag("Enemy").transform.position);
-            if (playercollider.IsTouching(GameObject.FindGameObjectWithTag("Enemy").GetComponent<Collider2D>()))
-            {         
-                Debug.Log("yeet");
-                touchenemy();
-                StartCoroutine(iframes());
+            //dist2 = Vector3.Distance(transform.position, GameObject.FindGameObjectWithTag("Enemy").transform.position);
+            //dist2 = Vector3.Distance(transform.position, enemies[0].transform.position);
+            closestenem = enemies[0];
+            foreach (GameObject enemy1 in enemies)
+            {
+                Debug.Log("this shit working?");
+                enemycontroller.Add(enemy1.GetComponent<Enemy>());
+                if (Vector3.Distance(transform.position, enemy1.transform.position) <= dist2)
+                {
+                    Debug.Log("wtf brooo");
+                    dist2 = Vector3.Distance(transform.position, enemy1.transform.position);
+                    closestenem = enemy1;
+                    Debug.Log(closestenem.transform.position);
+                }
             }
+
+            Debug.Log(dist2);
         }
+        */
 
-       
 
-        dash();
+            if (playercollider.IsTouching(GameObject.FindGameObjectWithTag("Enemy").GetComponent<Collider2D>()))
+            {
         
+            }
+
         
+
+
+
+        //Debug.Log(GetClosestEnemy(enemytransform));
+        closestenem = FindClosestEnemy();
+        if (playercollider.IsTouching(closestenem.GetComponent<Collider2D>()))
+        {
+            Debug.Log("yeet");
+            touchenemy();
+            StartCoroutine(iframes());
+        }
+        if (closestenem != null)
+        {
+            distdash = Vector3.Distance(transform.position, closestenem.transform.position);
+            Debug.Log(distdash);
+            dash();
+        }
         dropbox();
         throwbox();
         dmgenemy();
@@ -93,31 +126,34 @@ public class Player : MonoBehaviour
     {
         if (Input.GetKeyDown("c"))
         {
-            
+
             Debug.Log("clicked");
-            
-            if (dist2 <= 7 && enemy.health == 1)
+
+            if (distdash <= 10 && closestenem.health == 1)
             {
                 anim.SetTrigger("Attack");
                 Debug.Log("working");
-                enemy.health = 0;
-                
+                closestenem.health = 0;
+
                 if (gameObject.GetComponent<UnityStandardAssets._2D.PlatformerCharacter2D>().m_FacingRight == true)
                 {
-                    transform.position = new Vector3(GameObject.FindGameObjectWithTag("Enemy").transform.position.x + 5, transform.position.y, transform.position.z);
+                    transform.position = new Vector3(closestenem.transform.position.x + 5, transform.position.y, transform.position.z);
+                    //transform.position = new Vector3()
                 }
 
                 if (gameObject.GetComponent<UnityStandardAssets._2D.PlatformerCharacter2D>().m_FacingRight != true)
                 {
-                    transform.position = new Vector3(GameObject.FindGameObjectWithTag("Enemy").transform.position.x - 5, transform.position.y, transform.position.z);
+                    transform.position = new Vector3(closestenem.transform.position.x - 5, transform.position.y, transform.position.z);
                 }
                 StartCoroutine(dashdelay(100.0f));
             }
-
-
-
         }
     }
+
+
+
+        
+    
 
     public void dropbox()
     {
@@ -175,29 +211,55 @@ public class Player : MonoBehaviour
             }
         }
         else
-        {};
+        { };
     }
     public void dmgenemy()
     {
         if (Input.GetKeyDown("p"))
         {
-            Debug.Log(enemy.health);
-            enemy.health = enemy.health - 1;
-            Debug.Log(enemy.health);
+
+
+            Debug.Log(closestenem.GetComponent<Enemy>().health);
+            closestenem.GetComponent<Enemy>().health = closestenem.GetComponent<Enemy>().health - 1;
+            Debug.Log(closestenem.GetComponent<Enemy>().health);
+           
         }
-    }
+    }   
+        IEnumerator iframes()
+        {
+            iframe = true;
+            yield return new WaitForSeconds(3);
+            iframe = false;
+        }
 
-    IEnumerator iframes()
-    {
-        iframe = true;
-        yield return new WaitForSeconds(3);
-        iframe = false;
-    }
+        IEnumerator dashdelay(float delay)
+        {
 
-    IEnumerator dashdelay(float delay)
+            yield return new WaitForSeconds(delay);
+
+        }
+
+    public Enemy FindClosestEnemy()
     {
-        
-        yield return new WaitForSeconds(delay);
+        float distanceToClosestEnemy = Mathf.Infinity;
+        Enemy closestEnemy = null;
+        Enemy[] allEnemies = GameObject.FindObjectsOfType<Enemy>();
+
+        foreach (Enemy currentEnemy in allEnemies)
+        {
+            float distanceToEnemy = (currentEnemy.transform.position - this.transform.position).sqrMagnitude;
+            if (distanceToEnemy < distanceToClosestEnemy)
+            {
+                distanceToClosestEnemy = distanceToEnemy;
+                closestEnemy = currentEnemy;
+                //Debug.Log(distanceToClosestEnemy);
+            }
+            
+        }
+        Debug.Log(closestEnemy);
+        return closestEnemy;
+
         
     }
 }
+

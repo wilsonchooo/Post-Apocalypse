@@ -36,10 +36,30 @@ public class Package : MonoBehaviour
 
 
 
-        if (boxcollid.IsTouching(GameObject.FindGameObjectWithTag("Enemy").GetComponent<Collider2D>()))
+        GameObject search = GameObject.FindGameObjectWithTag("Enemy");
+        if (search != null)
         {
-            Debug.Log("yeet");
-            rigid.AddForce(new Vector3(transform.position.x - boxspeedx, transform.position.y + boxspeedy));
+            if (boxcollid.IsTouching(GameObject.FindGameObjectWithTag("Enemy").GetComponent<Collider2D>()))
+            {
+                if(retrieved == true)
+                {
+                    //this.transform.position = new Vector3(transform.position.x - 100, transform.position.y, transform.position.z);
+                    //rigid.AddForce(new Vector3(transform.position.x - 10, transform.position.y + 10));
+                    Debug.Log("inhand");
+                    
+                }
+
+                else
+                {
+                    rigid.AddForce(new Vector3(transform.position.x - boxspeedx, transform.position.y + boxspeedy));
+                    Debug.Log("not inhand");
+                }
+                    
+
+                Debug.Log("yeet");
+                
+            }
+
         }
 
     }
